@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.List;
 
 @Service
@@ -26,6 +27,31 @@ public class InterviewService {
         timeSlot = timeSlot.trim();
 
         return interviewRepository.findByInterviewDateAndTimeSlot(date, timeSlot);
+    }
+
+    public Map<String, Object> getInterviewStatus(LocalDate date, String timeSlot) {
+        List<Interview> interviews = getCabinStatus(date, timeSlot);
+
+        long scheduledCount = interviews.stream()
+                .filter(interview -> interview.getStatus() == InterviewStatus.SCHEDULED)
+                .count();
+
+        long waitingCount = interviews.stream()
+                .filter(interview -> interview.getStatus() == InterviewStatus.WAITING)
+                .count();
+
+        long completedCount = interviews.stream()
+                .filter(interview -> interview.getStatus() == InterviewStatus.COMPLETED)
+                .count();
+
+        return Map.of(
+                "date", date,
+                "timeSlot", timeSlot.trim(),
+                "scheduled", scheduledCount,
+                "waiting", waitingCount,
+                "completed", completedCount,
+                "interviews", interviews
+        );
     }
     public DashboardSummaryDTO getDashboardSummary() {
 
